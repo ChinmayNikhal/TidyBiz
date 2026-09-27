@@ -1,0 +1,31 @@
+# --- Python / backend ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+backend/tidybiz.db
+backend/*.db
+*.db-shm
+*.db-wal
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+*.local
+
+# --- Environment and secrets (never commit real values) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+
+# --- Tooling / OS ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,50 @@
+# Local development stack: FastAPI backend + Postgres (optional) + frontend.
+# Postgres is included so Phase 2+ can be developed against the same engine
+# family as the deployed database. Run `docker compose up db` for just the DB.
+#
+# NOTE: TIDYBIZ_DATABASE_URL values here point at the compose Postgres. For
+# plain local Python runs, keep the SQLite default from .env.example.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tidybiz
+      POSTGRES_PASSWORD: tidybiz-dev-only
+      POSTGRES_DB: tidybiz
+    ports:
+      - "5432:5432"
+    volumes:
+      - tidybiz_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tidybiz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      TIDYBIZ_DATABASE_URL: postgresql+psycopg://tidybiz:tidybiz-dev-only@db:5432/tidybiz
+      TIDYBIZ_PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:22-slim
+    working_dir: /app/frontend
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app/frontend
+    depends_on:
+      - api
+
+volumes:
+  tidybiz_pgdata:
